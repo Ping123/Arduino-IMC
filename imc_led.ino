@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <Wire.h>                 // Communication between Arduinos
+
 // define Pins & max. LED's --------------------------------------------------------------------------------------------
 #define LEDPIN         6          // PIN where LED-Band is
 #define NUMPIXELS      750        // How many Pixels are used?
-#define SPEAKER        46         // Speaker Pin
-#define SDPIN          53         // SD-Card-Slot Pin
-int relay_4 = 4;                  // Pin for the Relay
+const int relay_4 = 4;                  // Pin for the Relay
+byte go = 1;
 
 // set pixels as variable for the NepPixel libary ----------------------------------------------------------------------
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LEDPIN, NEO_GRB + NEO_KHZ800);
@@ -26,25 +27,26 @@ int galerie_array_1[81]   = {449,450,451,452,453,454,455,456,457,458,459,460,461
 int galerie_array_2[35]   = {539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573};
 int galerie_logo_array[9] = {514,515,516,517,518,519,520,521,522};
 int streets_array_1[95]   = {574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668};
-int streets_array_2[13]   = {668,669,670,671,672,673,674,675,676,677,678,679,680};
+int streets_array_2[33]   = {668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700};
 
 // initial Setup -------------------------------------------------------------------------------------------------------
 
 void setup() {
   pixels.begin();
   pixels.clear();
+
   // turn_all_on();
   // pixels.setBrightness(50);
   // pixels.show();
 
   set_basic_config();
-  // pixels.setBrightness(125);
   pixels.show();
   
   Serial.begin(9600);
-  //pinMode(relay_4, OUTPUT);
-  //digitalWrite(relay_4, HIGH);
-  //digitalWrite(relay_4, LOW);
+  Serial.setTimeout(50);
+  pinMode(relay_4, OUTPUT);
+
+  Wire.begin();
 
   Serial.println("init done"); 
 }
@@ -74,17 +76,10 @@ void setPixelBrightness(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint16_t br
 // Function to controll the Blacklight ---------------------------------------------------------------------------------
 void blackLight() {
   digitalWrite(relay_4, LOW);
-  delay(100);
+  delay(3000);
   digitalWrite(relay_4, HIGH);
+  delay(3000);
 }
-
-// Function to turn all LED's off --------------------------------------------------------------------------------------
-void turn_all_off(){
-  for(int i=0;i<600;i++){
-    pixels.setPixelColor(i, pixels.Color(0,0,0));
-    pixels.show();
-  }
-} 
 
 // Function to turn all LED's on ---------------------------------------------------------------------------------------
 void turn_all_on() {
@@ -104,15 +99,16 @@ void set_basic_config() {
     
   // Control -----------------------------------------------------------------------------------------------------------
   for(int i=0; i<3 ;i++){
-    setPixelBrightness(controll_array[i], 190,190,190, 125);
+    setPixelBrightness(controll_array[i], 190,190,190, 25);
   }
   
   // Moon --------------------------------------------------------------------------------------------------------------
   for(int i=0; i<15 ;i++){
-    setPixelBrightness(moon_array[i], 200,200,200, 125);
+    setPixelBrightness(moon_array[i], 200,200,200, 180);
     // pixels.setPixelColor(moon_array[i], pixels.Color(200,200,200));
   }
 
+  /*
   // Tower -------------------------------------------------------------------------------------------------------------
   // Gelb
   for(int i=0; i<18 ;i++) {
@@ -161,6 +157,7 @@ void set_basic_config() {
     // pixels.setPixelColor(city_array_2[i], pixels.Color(200,160,25));
   } 
   
+  */
   // Hotel -------------------------------------------------------------------------------------------------------------
   shuffle(merkur_array, 74);
   for(int i=0; i<30 ;i++){
@@ -171,6 +168,8 @@ void set_basic_config() {
     setPixelBrightness(merkur_array[i], 0,0,63, 25);
     // pixels.setPixelColor(merkur_array[i], pixels.Color(0,0,63));
   }
+
+  /*
 
   // Galerie -----------------------------------------------------------------------------------------------------------
   for(int i=0; i<82 ;i++){
@@ -190,28 +189,33 @@ void set_basic_config() {
 
   // Streets -----------------------------------------------------------------------------------------------------------
   for(int i=0; i<96 ;i++) {
-    setPixelBrightness(streets_array_1[i], 255,120,0, 125);
+    setPixelBrightness(streets_array_1[i], 255,120,0, 75);
     // pixels.setPixelColor(streets_array[i], pixels.Color(255,120,0));
   }
-  for(int i=0; i<14 ;i++) {
-    setPixelBrightness(streets_array_2[i], 255,120,0, 125);
+  for(int i=0; i<34 ;i++) {
+    setPixelBrightness(streets_array_2[i], 255,120,0, 75);
     // pixels.setPixelColor(streets_array[i], pixels.Color(255,120,0));
   }
+
+  */
 }
 
 // Function to set basic config ----------------------------------------------------------------------------------------
 void setFadeFromTo(uint16_t bright) {
     
+  
   // Control -----------------------------------------------------------------------------------------------------------
   for(int i=0; i<3 ;i++){
-    setPixelBrightness(controll_array[i], 190,190,190, 125);
+    setPixelBrightness(controll_array[i], 190,190,190, bright);
   }
   
+  /*
   // Moon --------------------------------------------------------------------------------------------------------------
   for(int i=0; i<15 ;i++){
     setPixelBrightness(moon_array[i], 200,200,200, bright);
     // pixels.setPixelColor(moon_array[i], pixels.Color(200,200,200));
   }
+  */
 
   // Tower -------------------------------------------------------------------------------------------------------------
   // Gelb
@@ -290,20 +294,27 @@ void setFadeFromTo(uint16_t bright) {
 
   // Streets -----------------------------------------------------------------------------------------------------------
   for(int i=0; i<96 ;i++) {
-    setPixelBrightness(streets_array_1[i], 255,120,0, bright);
+    setPixelBrightness(streets_array_1[i], 255,120,0, 50);
     // pixels.setPixelColor(streets_array[i], pixels.Color(255,120,0));
   }
-  for(int i=0; i<14 ;i++) {
-    setPixelBrightness(streets_array_2[i], 255,120,0, bright);
+  for(int i=0; i<34 ;i++) {
+    setPixelBrightness(streets_array_2[i], 255,120,0, 50);
     // pixels.setPixelColor(streets_array[i], pixels.Color(255,120,0));
   }
 }
 
 // MAIN LOOP FUNCTION --------------------------------------------------------------------------------------------------
 void loop() {
-  
+
+  Wire.beginTransmission(8); // transmit to device #4
+  Wire.write(go);            // sends one byte
+  Wire.endTransmission();    // stop transmitting
+
   Serial.println("STEP1: START");
   
+  digitalWrite(relay_4, LOW);
+  delay(500);
+
   for (int i=125; i<226; i++) {
     setFadeFromTo(i);
     pixels.show();
@@ -323,7 +334,7 @@ void loop() {
     delay(2480);
 
     for (int i=0; i<1; i++) {
-      setPixelBrightness(merkur_array[i], 0,0,63, 50);
+      setPixelBrightness(merkur_array[i], 0,0,63, 25);
       pixels.show();
     }
 
@@ -333,10 +344,13 @@ void loop() {
   Serial.println("STEP2: OK!");
   Serial.println("STEP3: START");
 
-  for (int i=225; i>24; i--) {
+  for (int i=225; i>9; i--) {
     setFadeFromTo(i);
     pixels.show();
   }
+
+  digitalWrite(relay_4, HIGH);
+  delay(500);
 
   Serial.println("STEP3: OK!");
   Serial.println("STEP4: START");
@@ -346,10 +360,11 @@ void loop() {
   Serial.println("STEP4: OK!");
   Serial.println("STEP5: START");
 
-  for (int i=25; i<126; i++) {
+  for (int i=10; i<126; i++) {
     setFadeFromTo(i);
     pixels.show();
   }
 
   Serial.println("STEP5: OK!");
+
 }
